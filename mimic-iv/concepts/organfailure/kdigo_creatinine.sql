@@ -6,13 +6,13 @@ WITH cr AS
         , ie.stay_id
         , le.charttime
         , AVG(le.valuenum) AS creat
-    FROM `physionet-data.mimic_icu.icustays` ie
-    LEFT JOIN `physionet-data.mimic_hosp.labevents` le
+    FROM mimic_icu.icustays ie
+    LEFT JOIN mimic_hosp.labevents le
     ON ie.subject_id = le.subject_id
     AND le.ITEMID = 50912
     AND le.VALUENUM IS NOT NULL
     AND le.VALUENUM <= 150
-    AND le.CHARTTIME BETWEEN DATETIME_SUB(ie.intime, INTERVAL '7' DAY) AND ie.outtime
+    AND le.CHARTTIME BETWEEN (ie.intime - INTERVAL '7' DAY) AND ie.outtime
     GROUP BY ie.hadm_id, ie.stay_id, le.charttime
 )
 , cr48 AS
@@ -27,7 +27,7 @@ WITH cr AS
     LEFT JOIN cr cr48
         ON cr.stay_id = cr48.stay_id
         AND cr48.charttime <  cr.charttime
-        AND cr48.charttime >= DATETIME_SUB(cr.charttime, INTERVAL '48' HOUR)
+        AND cr48.charttime >= (cr.charttime - INTERVAL '48' HOUR)
     GROUP BY cr.stay_id, cr.charttime
 )
 , cr7 AS
@@ -42,7 +42,7 @@ WITH cr AS
     LEFT JOIN cr cr7
       ON cr.stay_id = cr7.stay_id
       AND cr7.charttime <  cr.charttime
-      AND cr7.charttime >= DATETIME_SUB(cr.charttime, INTERVAL '7' DAY)
+      AND cr7.charttime >= (cr.charttime - INTERVAL '7' DAY)
     GROUP BY cr.stay_id, cr.charttime
 )
 SELECT 
